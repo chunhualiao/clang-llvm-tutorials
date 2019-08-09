@@ -264,6 +264,70 @@ public:
   }
 };
 
+/// This represents '#pragma omp metadirective' directive.
+///
+/// \code
+/// #pragma omp metadirective [clause[[,]clause]...]
+/// \endcode
+/// In this example directive '#pragma omp metadirective' has clauses 'when'
+/// with a user condition (a > 5) and directive variant as 
+/// 'parallel for'.
+class OMPMetaDirective : public OMPExecutableDirective {
+  friend class ASTStmtReader;
+  // true if the construct has inner cancel directive.
+  bool HasCancel;
+
+  /// Build directive with the given start and end location.
+  ///
+  /// \param StartLoc Starting location of the directive (directive keyword).
+  /// \param EndLoc Ending Location of the directive.
+  /// \param NumClauses Number of clauses to metadirective
+  OMPMetaDirective(SourceLocation StartLoc, SourceLocation EndLoc, unsigned NumClauses)
+    : OMPExecutableDirective(this, OMPMetaDirectiveClass, OMPD_metadirective,
+                            StartLoc, EndLoc, NumClauses, 1),
+        HasCancel(false) {}
+
+  /// Build an empty directive.
+  ///
+  /// \param NumClauses Number of clauses.
+  explicit OMPMetaDirective(unsigned NumClauses)
+    : OMPExecutableDirective(this, OMPMetaDirectiveClass, OMPD_metadirective,
+                            SourceLocation(), SourceLocation(), NumClauses,
+                            1),
+        HasCancel(false) {}
+
+  /// Set cancel state
+  void setHasCancel(bool Has) { HasCancel = Has; }
+
+public:
+  /// Creates directive with a list of \a Clauses.
+  ///
+  /// \param C AST context.
+  /// \param StartLoc Starting location of the directive kind.
+  /// \param EndLoc Ending Location of the directive.
+  /// \param Clauses List of clauses.
+  /// \param AssociatedStmt Statement associated with the directive.
+  /// \param HasCancel true if this directive has inner cancel directive.
+  static OMPMetaDirective *
+  Create(const ASTContext &C, SourceLocation StartLoc, SourceLocation EndLoc,
+        ArrayRef<OMPClause *> Clauses, Stmt *AssociatedStmt, bool HasCancel);
+
+  /// Creates an empty directive with the place for \a N clauses.
+  ///
+  /// \param C AST context.
+  /// \param NumClauses Number of clauses.
+  ///
+  static OMPMetaDirective *CreateEmpty(const ASTContext &C,
+                                        unsigned NumClauses, EmptyShell);
+
+  /// Return true if current directive has inner cancel directive.
+  bool hasCancel() const { return HasCancel; }
+
+  static bool classof(const Stmt *T) {
+    return T->getStmtClass() == OMPMetaDirectiveClass;
+  }
+};
+
 /// This represents '#pragma omp parallel' directive.
 ///
 /// \code

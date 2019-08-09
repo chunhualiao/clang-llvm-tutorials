@@ -17,6 +17,27 @@
 
 using namespace clang;
 
+OMPMetaDirective *OMPMetaDirective::Create(
+    const ASTContext &C, SourceLocation StartLoc, SourceLocation EndLoc,
+    ArrayRef<OMPClause *> Clauses, Stmt *AssociatedStmt, bool HasCancel) {
+  unsigned Size = llvm::alignTo(sizeof(OMPMetaDirective), alignof(OMPClause *));
+  void *Mem = C.Allocate(Size + sizeof(OMPClause *) * Clauses.size() + sizeof(Stmt *));
+
+  OMPMetaDirective *Dir = new (Mem) OMPMetaDirective(StartLoc, EndLoc, Clauses.size());
+  Dir->setClauses(Clauses);
+  Dir->setAssociatedStmt(AssociatedStmt);
+  Dir->setHasCancel(HasCancel);
+  return Dir;
+}
+
+OMPMetaDirective *OMPMetaDirective::CreateEmpty(const ASTContext &C, 
+                                                unsigned NumClauses, EmptyShell) {
+  unsigned Size = llvm::alignTo(sizeof(OMPMetaDirective), alignof(OMPClause *));
+  void *Mem = C.Allocate(Size + sizeof(OMPClause *) * NumClauses + sizeof(Stmt *));
+
+  return new (Mem) OMPMetaDirective(NumClauses);
+}
+
 void OMPExecutableDirective::setClauses(ArrayRef<OMPClause *> Clauses) {
   assert(Clauses.size() == getNumClauses() &&
          "Number of clauses is not the same as the preallocated buffer");

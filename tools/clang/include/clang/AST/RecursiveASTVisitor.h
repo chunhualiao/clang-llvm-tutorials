@@ -2117,6 +2117,8 @@ DEF_TRAVERSE_DECL(ParmVarDecl, {
     return ReturnValue;                                                        \
   }
 
+DEF_TRAVERSE_STMT(OMPMetaDirective, { TRY_TO(TraverseOMPExecutableDirective(S)); })
+
 DEF_TRAVERSE_STMT(GCCAsmStmt, {
   TRY_TO_TRAVERSE_OR_ENQUEUE_STMT(S->getAsmString());
   for (unsigned I = 0, E = S->getNumInputs(); I < E; ++I) {

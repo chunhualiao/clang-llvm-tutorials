@@ -1975,6 +1975,9 @@ namespace serialization {
       EXPR_COAWAIT,
       EXPR_COYIELD,
       EXPR_DEPENDENT_COAWAIT,
+
+      // METADIRECTIVE
+      STMT_OMP_META_DIRECTIVE,
     };
 
     /// The kinds of designators that can occur in a

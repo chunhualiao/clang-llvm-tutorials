@@ -639,6 +639,11 @@ void StmtPrinter::PrintOMPExecutableDirective(OMPExecutableDirective *S,
     PrintStmt(S->getInnermostCapturedStmt()->getCapturedStmt());
 }
 
+void StmtPrinter::VisitOMPMetaDirective(OMPMetaDirective *Node) {
+  Indent() << "#pragma omp metadirective";
+  PrintOMPExecutableDirective(Node);
+}
+
 void StmtPrinter::VisitOMPParallelDirective(OMPParallelDirective *Node) {
   Indent() << "#pragma omp parallel";
   PrintOMPExecutableDirective(Node);

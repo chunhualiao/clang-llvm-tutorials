@@ -8847,6 +8847,14 @@ public:
       OpenMPDirectiveKind Kind, const DeclarationNameInfo &DirName,
       OpenMPDirectiveKind CancelRegion, ArrayRef<OMPClause *> Clauses,
       Stmt *AStmt, SourceLocation StartLoc, SourceLocation EndLoc);
+
+  /// Called on well-formed '\#pragma omp metadirective' after parsing
+  /// of the  associated statement.
+  StmtResult ActOnOpenMPMetaDirective(ArrayRef<OMPClause *> Clauses,
+                                          Stmt *AStmt,
+                                          SourceLocation StartLoc,
+                                          SourceLocation EndLoc);
+
   /// Called on well-formed '\#pragma omp parallel' after parsing
   /// of the  associated statement.
   StmtResult ActOnOpenMPParallelDirective(ArrayRef<OMPClause *> Clauses,

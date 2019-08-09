@@ -2480,6 +2480,7 @@ public:
 
 void Sema::ActOnOpenMPRegionStart(OpenMPDirectiveKind DKind, Scope *CurScope) {
   switch (DKind) {
+  case OMPD_metadirective:
   case OMPD_parallel:
   case OMPD_parallel_for:
   case OMPD_parallel_for_simd:
@@ -3417,6 +3418,9 @@ StmtResult Sema::ActOnOpenMPExecutableDirective(
 
   llvm::SmallVector<OpenMPDirectiveKind, 4> AllowedNameModifiers;
   switch (Kind) {
+   case OMPD_metadirective:
+     Res = ActOnOpenMPMetaDirective(ClausesWithImplicit, AStmt, StartLoc, EndLoc);
+     break;
   case OMPD_parallel:
     Res = ActOnOpenMPParallelDirective(ClausesWithImplicit, AStmt, StartLoc,
                                        EndLoc);
@@ -3677,6 +3681,22 @@ StmtResult Sema::ActOnOpenMPExecutableDirective(
   if (ErrorFound)
     return StmtError();
   return Res;
+}
+
+StmtResult Sema::ActOnOpenMPMetaDirective(ArrayRef<OMPClause *> Clauses,
+                                               Stmt *AStmt,
+                                               SourceLocation StartLoc,
+                                               SourceLocation EndLoc) {
+  if (!AStmt)
+    return StmtError();
+
+  auto *CS = cast<CapturedStmt>(AStmt);
+  CS->getCapturedDecl()->setNothrow();
+
+  setFunctionHasBranchProtectedScope();
+
+  return OMPMetaDirective::Create(Context, StartLoc, EndLoc, Clauses, AStmt,
+                                  DSAStack->isCancelRegion());
 }
 
 Sema::DeclGroupPtrTy Sema::ActOnOpenMPDeclareSimdDirective(

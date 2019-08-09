@@ -999,7 +999,22 @@ StmtResult Parser::ParseOpenMPDeclarativeOrExecutableDirective(
   case OMPD_metadirective: {
     std::cout <<"METADIRECTIVE is caught\n";
     ConsumeToken();
+    ParseScope OMPDirectiveScope(this, ScopeFlags);
+    Actions.StartOpenMPDSABlock(DKind, DirName, Actions.getCurScope(), Loc);
+    // Consume final annot_pragma_openmp_end.
     ConsumeAnnotationToken();
+    StmtResult AssociatedStmt;
+    // The body is a block scope like in Lambdas and Blocks.
+    Actions.ActOnOpenMPRegionStart(DKind, getCurScope());
+    AssociatedStmt = (Sema::CompoundScopeRAII(Actions), ParseStatement());
+    AssociatedStmt = Actions.ActOnOpenMPRegionEnd(AssociatedStmt, Clauses);
+
+    Directive = Actions.ActOnOpenMPExecutableDirective(
+        DKind, DirName, CancelRegion, Clauses, AssociatedStmt.get(), Loc,
+        EndLoc);
+
+    // Exit scope.
+    Actions.EndOpenMPDSABlock(Directive.get());
     break;
   }
   case OMPD_threadprivate: {
