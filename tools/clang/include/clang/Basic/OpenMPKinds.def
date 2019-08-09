@@ -889,6 +889,8 @@ OPENMP_TARGET_TEAMS_DISTRIBUTE_SIMD_CLAUSE(simdlen)
 // Clauses allowed for OpenMP directive 'taskgroup'.
 OPENMP_TASKGROUP_CLAUSE(task_reduction)
 
+OPENMP_DIRECTIVE_EXT(metadirective, "metadirective")
+
 #undef OPENMP_TASKGROUP_CLAUSE
 #undef OPENMP_TASKLOOP_SIMD_CLAUSE
 #undef OPENMP_TASKLOOP_CLAUSE
