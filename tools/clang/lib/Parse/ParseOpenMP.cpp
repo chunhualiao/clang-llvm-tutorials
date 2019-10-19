@@ -997,8 +997,17 @@ StmtResult Parser::ParseOpenMPDeclarativeOrExecutableDirective(
   switch (DKind) {
   case OMPD_allocate: {
     llvm::errs() <<"ALLOCATE is caught\n";
-     ConsumeToken();
+    ConsumeToken();
+    ParseScope OMPDirectiveScope(this, ScopeFlags);
+    Actions.StartOpenMPDSABlock(DKind, DirName, Actions.getCurScope(), Loc);
     ConsumeAnnotationToken();
+    Directive = Actions.ActOnOpenMPExecutableDirective(
+        DKind, DirName, CancelRegion, Clauses, nullptr, Loc,
+        EndLoc);
+
+    // Exit scope.
+    Actions.EndOpenMPDSABlock(Directive.get());
+    OMPDirectiveScope.Exit();
     break;
   }
   case OMPD_threadprivate: {

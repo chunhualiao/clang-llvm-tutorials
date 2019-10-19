@@ -1918,6 +1918,12 @@ void ASTStmtReader::VisitOMPExecutableDirective(OMPExecutableDirective *E) {
     E->setAssociatedStmt(Record.readSubStmt());
 }
 
+void ASTStmtReader::VisitOMPAllocateDirective(OMPAllocateDirective *D) {
+  VisitStmt(D);
+  Record.skipInts(1);
+  VisitOMPExecutableDirective(D);
+}
+
 void ASTStmtReader::VisitOMPLoopDirective(OMPLoopDirective *D) {
   VisitStmt(D);
   // Two fields (NumClauses and CollapsedNum) were read in ReadStmtFromStream.
@@ -3393,6 +3399,11 @@ Stmt *ASTReader::ReadStmtFromStream(ModuleFile &F) {
 
     case EXPR_DEPENDENT_COAWAIT:
       S = new (Context) DependentCoawaitExpr(Empty);
+      break;
+    case STMT_OMP_ALLOCATE_DIRECTIVE:
+      S = OMPAllocateDirective::CreateEmpty(Context,
+                                 Record[ASTStmtReader::NumStmtFields],
+                                 Empty);
       break;
     }
 

@@ -1887,6 +1887,13 @@ void ASTStmtWriter::VisitOMPExecutableDirective(OMPExecutableDirective *E) {
     Record.AddStmt(E->getAssociatedStmt());
 }
 
+void ASTStmtWriter::VisitOMPAllocateDirective(OMPAllocateDirective *D) {
+  VisitStmt(D);
+  Record.push_back(D->getNumClauses());
+  VisitOMPExecutableDirective(D);
+  Code = serialization::STMT_OMP_ALLOCATE_DIRECTIVE;
+}
+
 void ASTStmtWriter::VisitOMPLoopDirective(OMPLoopDirective *D) {
   VisitStmt(D);
   Record.push_back(D->getNumClauses());

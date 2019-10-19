@@ -264,6 +264,31 @@ public:
   }
 };
 
+class OMPAllocateDirective : public OMPExecutableDirective {
+  friend class ASTStmtReader;
+
+  OMPAllocateDirective(SourceLocation StartLoc, SourceLocation EndLoc, unsigned NumClauses)
+    : OMPExecutableDirective(this, OMPAllocateDirectiveClass, OMPD_allocate,
+                            StartLoc, EndLoc, NumClauses, 0) {}
+
+  explicit OMPAllocateDirective(unsigned NumClauses)
+    : OMPExecutableDirective(this, OMPAllocateDirectiveClass, OMPD_allocate,
+                            SourceLocation(), SourceLocation(), NumClauses,
+                            0) {}
+
+public:
+  static OMPAllocateDirective *
+  Create(const ASTContext &C, SourceLocation StartLoc, SourceLocation EndLoc,
+        ArrayRef<OMPClause *> Clauses);
+
+  static OMPAllocateDirective *CreateEmpty(const ASTContext &C,
+                                        unsigned NumClauses, EmptyShell);
+
+  static bool classof(const Stmt *T) {
+    return T->getStmtClass() == OMPAllocateDirectiveClass;
+  }
+};
+
 /// This represents '#pragma omp parallel' directive.
 ///
 /// \code

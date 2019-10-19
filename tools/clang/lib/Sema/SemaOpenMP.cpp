@@ -2813,6 +2813,7 @@ void Sema::ActOnOpenMPRegionStart(OpenMPDirectiveKind DKind, Scope *CurScope) {
   case OMPD_declare_target:
   case OMPD_end_declare_target:
   case OMPD_requires:
+  case OMPD_allocate:
     llvm_unreachable("OpenMP Directive is not allowed");
   case OMPD_unknown:
     llvm_unreachable("Unknown OpenMP directive");
@@ -3417,6 +3418,11 @@ StmtResult Sema::ActOnOpenMPExecutableDirective(
 
   llvm::SmallVector<OpenMPDirectiveKind, 4> AllowedNameModifiers;
   switch (Kind) {
+  case OMPD_allocate:
+    assert(AStmt == nullptr && 
+    "No associated statement allowed for 'omp allocate' directive");
+    Res = ActOnOpenMPAllocateDirective(ClausesWithImplicit, StartLoc, EndLoc);
+    break;
   case OMPD_parallel:
     Res = ActOnOpenMPParallelDirective(ClausesWithImplicit, AStmt, StartLoc,
                                        EndLoc);
@@ -3677,6 +3683,13 @@ StmtResult Sema::ActOnOpenMPExecutableDirective(
   if (ErrorFound)
     return StmtError();
   return Res;
+}
+
+StmtResult Sema::ActOnOpenMPAllocateDirective(ArrayRef<OMPClause *> Clauses,
+                                          SourceLocation StartLoc,
+                                          SourceLocation EndLoc) {
+  assert(Clauses.size() < 1 && "Extra clauses in allocate directive");
+  return OMPAllocateDirective::Create(Context, StartLoc, EndLoc, Clauses);
 }
 
 Sema::DeclGroupPtrTy Sema::ActOnOpenMPDeclareSimdDirective(
