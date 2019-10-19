@@ -640,7 +640,7 @@ void StmtPrinter::PrintOMPExecutableDirective(OMPExecutableDirective *S,
 }
 
 void StmtPrinter::VisitOMPAllocateDirective(OMPAllocateDirective *Node) {
-  Indent() << "#pragma omp metadirective";
+  Indent() << "#pragma omp allocate";
   PrintOMPExecutableDirective(Node);
 }
 
