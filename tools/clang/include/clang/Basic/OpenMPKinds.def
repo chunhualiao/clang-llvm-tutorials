@@ -238,6 +238,7 @@ OPENMP_DIRECTIVE_EXT(target_teams_distribute_simd, "target teams distribute simd
 OPENMP_DIRECTIVE(allocate)
 
 // OpenMP clauses.
+OPENMP_CLAUSE(allocate, OMPAllocateClause)
 OPENMP_CLAUSE(if, OMPIfClause)
 OPENMP_CLAUSE(final, OMPFinalClause)
 OPENMP_CLAUSE(num_threads, OMPNumThreadsClause)

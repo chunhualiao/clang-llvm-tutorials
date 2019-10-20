@@ -933,6 +933,7 @@ Parser::DeclGroupPtrTy Parser::ParseOpenMPDeclarativeDirectiveWithExtDecl(
   case OMPD_target_teams_distribute_parallel_for:
   case OMPD_target_teams_distribute_parallel_for_simd:
   case OMPD_target_teams_distribute_simd:
+  case OMPD_allocate:
     Diag(Tok, diag::err_omp_unexpected_directive)
         << 1 << getOpenMPDirectiveName(DKind);
     break;
@@ -993,13 +994,43 @@ StmtResult Parser::ParseOpenMPDeclarativeOrExecutableDirective(
   StmtResult Directive = StmtError();
   bool HasAssociatedStatement = true;
   bool FlushHasClause = false;
+  bool AllocateHasClause = false;
 
   switch (DKind) {
   case OMPD_allocate: {
     llvm::errs() <<"ALLOCATE is caught\n";
+    if (PP.LookAhead(0).is(tok::l_paren)) {
+      AllocateHasClause = true;
+      // Push copy of the current token back to stream to properly parse
+      // pseudo-clause OMPAllocateClause.
+      PP.EnterToken(Tok);
+    }
     ConsumeToken();
     ParseScope OMPDirectiveScope(this, ScopeFlags);
     Actions.StartOpenMPDSABlock(DKind, DirName, Actions.getCurScope(), Loc);
+    while (Tok.isNot(tok::annot_pragma_openmp_end)) {
+      OpenMPClauseKind CKind =
+          Tok.isAnnotation()
+              ? OMPC_unknown
+              : AllocateHasClause ? OMPC_allocate
+                               : getOpenMPClauseKind(PP.getSpelling(Tok));
+      Actions.StartOpenMPClause(CKind);
+      AllocateHasClause = false;
+      OMPClause *Clause =
+          ParseOpenMPClause(DKind, CKind, !FirstClauses[CKind].getInt());
+      FirstClauses[CKind].setInt(true);
+      if (Clause) {
+        FirstClauses[CKind].setPointer(Clause);
+        Clauses.push_back(Clause);
+      }
+
+      // Skip ',' if any.
+      if (Tok.is(tok::comma))
+        ConsumeToken();
+      Actions.EndOpenMPClause();
+    }
+    // End location of the directive.
+    EndLoc = Tok.getLocation();
     ConsumeAnnotationToken();
     Directive = Actions.ActOnOpenMPExecutableDirective(
         DKind, DirName, CancelRegion, Clauses, nullptr, Loc,
@@ -1439,6 +1470,7 @@ OMPClause *Parser::ParseOpenMPClause(OpenMPDirectiveKind DKind,
   case OMPC_from:
   case OMPC_use_device_ptr:
   case OMPC_is_device_ptr:
+  case OMPC_allocate:
     Clause = ParseOpenMPVarListClause(DKind, CKind, WrongDirective);
     break;
   case OMPC_unknown:

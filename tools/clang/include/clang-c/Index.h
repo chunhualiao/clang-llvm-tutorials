@@ -2531,7 +2531,9 @@ enum CXCursorKind {
    */
   CXCursor_OMPTargetTeamsDistributeSimdDirective = 279,
 
-  CXCursor_LastStmt = CXCursor_OMPTargetTeamsDistributeSimdDirective,
+  CXCursor_OMPAllocateDirective = 280,
+
+  CXCursor_LastStmt = CXCursor_OMPAllocateDirective,
 
   /**
    * Cursor that represents the translation unit itself.

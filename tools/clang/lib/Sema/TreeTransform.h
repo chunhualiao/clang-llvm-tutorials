@@ -1934,6 +1934,18 @@ public:
                                                   EndLoc);
   }
 
+  /// Build a new OpenMP 'allocate' pseudo clause.
+  ///
+  /// By default, performs semantic analysis to build the new OpenMP clause.
+  /// Subclasses may override this routine to provide different behavior.
+  OMPClause *RebuildOMPAllocateClause(ArrayRef<Expr *> VarList,
+                                      SourceLocation StartLoc,
+                                      SourceLocation LParenLoc,
+                                      SourceLocation EndLoc) {
+    return getSema().ActOnOpenMPAllocateClause(VarList, StartLoc, LParenLoc,
+                                               EndLoc);
+  }
+
   /// Rebuild the operand to an Objective-C \@synchronized statement.
   ///
   /// By default, performs semantic analysis to build the new statement.
@@ -9324,6 +9336,23 @@ TreeTransform<Derived>::TransformArraySubscriptExpr(ArraySubscriptExpr *E) {
       LHS.get(),
       /*FIXME:*/ E->getLHS()->getBeginLoc(), RHS.get(), E->getRBracketLoc());
 }
+
+template <typename Derived>
+OMPClause *TreeTransform<Derived>::TransformOMPAllocateClause(OMPAllocateClause *C) {
+  llvm::SmallVector<Expr *, 16> Vars;
+  Vars.reserve(C->varlist_size());
+  for (auto *VE : C->varlists()) {
+    ExprResult EVar = getDerived().TransformExpr(cast<Expr>(VE));
+    if (EVar.isInvalid())
+      return nullptr;
+    Vars.push_back(EVar.get());
+  }
+  return getDerived().RebuildOMPAllocateClause(Vars, 
+                                               C->getBeginLoc(),
+                                               C->getLParenLoc(), 
+                                               C->getEndLoc());
+}
+
 
 template <typename Derived>
 ExprResult

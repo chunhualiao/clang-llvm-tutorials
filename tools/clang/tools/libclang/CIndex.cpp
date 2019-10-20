@@ -2062,6 +2062,7 @@ public:
       const OMPTargetTeamsDistributeParallelForSimdDirective *D);
   void VisitOMPTargetTeamsDistributeSimdDirective(
       const OMPTargetTeamsDistributeSimdDirective *D);
+  void VisitOMPAllocateDirective(const OMPAllocateDirective *D);
 
 private:
   void AddDeclarationNameInfo(const Stmt *S);
@@ -2422,6 +2423,9 @@ void OMPClauseEnqueue::VisitOMPUseDevicePtrClause(const OMPUseDevicePtrClause *C
   VisitOMPClauseList(C);
 }
 void OMPClauseEnqueue::VisitOMPIsDevicePtrClause(const OMPIsDevicePtrClause *C) {
+  VisitOMPClauseList(C);
+}
+void OMPClauseEnqueue::VisitOMPAllocateClause(const OMPAllocateClause *C) {
   VisitOMPClauseList(C);
 }
 }
@@ -2946,6 +2950,10 @@ void EnqueueVisitor::VisitOMPTargetTeamsDistributeParallelForSimdDirective(
 void EnqueueVisitor::VisitOMPTargetTeamsDistributeSimdDirective(
     const OMPTargetTeamsDistributeSimdDirective *D) {
   VisitOMPLoopDirective(D);
+}
+
+void EnqueueVisitor::VisitOMPAllocateDirective(const OMPAllocateDirective *D) {
+  VisitOMPExecutableDirective(D);
 }
 
 void CursorVisitor::EnqueueWorkList(VisitorWorkList &WL, const Stmt *S) {
@@ -5475,6 +5483,8 @@ CXString clang_getCursorKindSpelling(enum CXCursorKind Kind) {
       return cxstring::createRef("StaticAssert");
   case CXCursor_FriendDecl:
     return cxstring::createRef("FriendDecl");
+  case CXCursor_OMPAllocateDirective:
+    return cxstring::createRef("OMPAllocateDirective");
   }
 
   llvm_unreachable("Unhandled CXCursorKind");

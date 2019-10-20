@@ -46,11 +46,12 @@ const char *clang::getOpenMPDirectiveName(OpenMPDirectiveKind Kind) {
 }
 
 OpenMPClauseKind clang::getOpenMPClauseKind(StringRef Str) {
-  // 'flush' clause cannot be specified explicitly, because this is an implicit
-  // clause for 'flush' directive. If the 'flush' clause is explicitly specified
+  // 'flush' or 'allocate' clause cannot be specified explicitly, because 
+  // this is an implicit clause for 'flush' or 'allocate' directive. 
+  // If the 'flush' or 'allocate' clause is explicitly specified
   // the Parser should generate a warning about extra tokens at the end of the
   // directive.
-  if (Str == "flush")
+  if (Str == "flush" || Str == "allocate")
     return OMPC_unknown;
   return llvm::StringSwitch<OpenMPClauseKind>(Str)
 #define OPENMP_CLAUSE(Name, Class) .Case(#Name, OMPC_##Name)
@@ -181,6 +182,7 @@ unsigned clang::getOpenMPSimpleClauseType(OpenMPClauseKind Kind,
   case OMPC_unified_shared_memory:
   case OMPC_reverse_offload:
   case OMPC_dynamic_allocators:
+  case OMPC_allocate:
     break;
   }
   llvm_unreachable("Invalid OpenMP simple clause kind");
@@ -340,6 +342,7 @@ const char *clang::getOpenMPSimpleClauseTypeName(OpenMPClauseKind Kind,
   case OMPC_unified_shared_memory:
   case OMPC_reverse_offload:
   case OMPC_dynamic_allocators:
+  case OMPC_allocate:
     break;
   }
   llvm_unreachable("Invalid OpenMP simple clause kind");
@@ -764,6 +767,9 @@ bool clang::isAllowedClauseForDirective(OpenMPDirectiveKind DKind,
     default:
       break;
     }
+    break;
+  case OMPD_allocate:
+    return CKind == OMPC_allocate;
     break;
   case OMPD_declare_target:
   case OMPD_end_declare_target:

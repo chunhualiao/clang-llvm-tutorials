@@ -3301,6 +3301,84 @@ public:
   }
 };
 
+/// This represents implicit clause 'allocate' for the '#pragma omp allocate'
+/// directive.
+/// This clause does not exist by itself, it can be only as a part of 'omp
+/// allocate' directive. This clause is introduced to keep the original 
+/// structure of \a OMPExecutableDirective class and its derivatives and to 
+/// use the existing infrastructure of clauses with the list of variables.
+///
+/// \code
+/// #pragma omp allocate(A)
+/// \endcode
+/// In this example directive '#pragma omp allocate' has implicit clause 
+/// 'allocate' with the pointer variables 'A'.
+///
+class OMPAllocateClause final
+    : public OMPVarListClause<OMPAllocateClause>,
+      private llvm::TrailingObjects<OMPAllocateClause, Expr *> {
+  friend TrailingObjects;
+  friend OMPVarListClause;
+
+  /// Build clause with number of variables \a N.
+  ///
+  /// \param StartLoc Starting location of the clause.
+  /// \param LParenLoc Location of '('.
+  /// \param EndLoc Ending location of the clause.
+  /// \param N Number of the variables in the clause.
+  ///
+  OMPAllocateClause(SourceLocation StartLoc,
+                    SourceLocation LParenLoc,
+                    SourceLocation EndLoc,
+                    unsigned N)
+      : OMPVarListClause<OMPAllocateClause>(OMPC_allocate,
+                                            StartLoc,
+                                            LParenLoc,
+                                            EndLoc,
+                                            N) {}
+
+  /// Build an empty clause.
+  ///
+  /// \param N Number of variables.
+  ///
+  explicit OMPAllocateClause(unsigned N)
+      : OMPVarListClause<OMPAllocateClause>(OMPC_allocate,
+                                            SourceLocation(),
+                                            SourceLocation(),
+                                            SourceLocation(),
+                                            N) {}
+
+public:
+  /// Creates clause with a list of variables \a VL.
+  ///
+  /// \param C AST context.
+  /// \param StartLoc Starting location of the clause.
+  /// \param LParenLoc Location of '('.
+  /// \param EndLoc Ending location of the clause.
+  /// \param VL List of references to the variables.
+  ///
+  static OMPAllocateClause *Create(const ASTContext &C,
+                                   SourceLocation StartLoc,
+                                   SourceLocation LParenLoc,
+                                   SourceLocation EndLoc,
+                                   ArrayRef<Expr *> VL);
+  /// Creates an empty clause with \a N variables.
+  ///
+  /// \param C AST context.
+  /// \param N The number of variables.
+  ///
+  static OMPAllocateClause *CreateEmpty(const ASTContext &C, unsigned N);
+
+  child_range children() {
+    return child_range(reinterpret_cast<Stmt **>(varlist_begin()),
+                       reinterpret_cast<Stmt **>(varlist_end()));
+  }
+
+  static bool classof(const OMPClause *T) {
+    return T->getClauseKind() == OMPC_allocate;
+  }
+};
+
 /// This represents implicit clause 'depend' for the '#pragma omp task'
 /// directive.
 ///

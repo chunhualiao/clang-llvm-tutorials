@@ -753,6 +753,10 @@ void OMPClauseProfiler::VisitOMPIsDevicePtrClause(
     const OMPIsDevicePtrClause *C) {
   VisitOMPClauseList(C);
 }
+void OMPClauseProfiler::VisitOMPAllocateClause(
+    const OMPAllocateClause *C) {
+  VisitOMPClauseList(C);
+}
 }
 
 void

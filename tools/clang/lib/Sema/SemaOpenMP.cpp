@@ -3420,7 +3420,7 @@ StmtResult Sema::ActOnOpenMPExecutableDirective(
   switch (Kind) {
   case OMPD_allocate:
     assert(AStmt == nullptr && 
-    "No associated statement allowed for 'omp allocate' directive");
+        "No associated statement allowed for 'omp allocate' directive");
     Res = ActOnOpenMPAllocateDirective(ClausesWithImplicit, StartLoc, EndLoc);
     break;
   case OMPD_parallel:
@@ -8308,6 +8308,7 @@ OMPClause *Sema::ActOnOpenMPSingleExprClause(OpenMPClauseKind Kind, Expr *Expr,
   case OMPC_reverse_offload:
   case OMPC_dynamic_allocators:
   case OMPC_atomic_default_mem_order:
+  case OMPC_allocate:
     llvm_unreachable("Clause is not allowed.");
   }
   return Res;
@@ -9160,6 +9161,7 @@ OMPClause *Sema::ActOnOpenMPSimpleClause(
   case OMPC_unified_shared_memory:
   case OMPC_reverse_offload:
   case OMPC_dynamic_allocators:
+  case OMPC_allocate:
     llvm_unreachable("Clause is not allowed.");
   }
   return Res;
@@ -9336,6 +9338,7 @@ OMPClause *Sema::ActOnOpenMPSingleExprWithArgClause(
   case OMPC_reverse_offload:
   case OMPC_dynamic_allocators:
   case OMPC_atomic_default_mem_order:
+  case OMPC_allocate:
     llvm_unreachable("Clause is not allowed.");
   }
   return Res;
@@ -9543,6 +9546,7 @@ OMPClause *Sema::ActOnOpenMPClause(OpenMPClauseKind Kind,
   case OMPC_use_device_ptr:
   case OMPC_is_device_ptr:
   case OMPC_atomic_default_mem_order:
+  case OMPC_allocate:
     llvm_unreachable("Clause is not allowed.");
   }
   return Res;
@@ -9699,6 +9703,9 @@ OMPClause *Sema::ActOnOpenMPVarListClause(
     break;
   case OMPC_is_device_ptr:
     Res = ActOnOpenMPIsDevicePtrClause(VarList, StartLoc, LParenLoc, EndLoc);
+    break;
+  case OMPC_allocate:
+    Res = ActOnOpenMPAllocateClause(VarList, StartLoc, LParenLoc, EndLoc);
     break;
   case OMPC_if:
   case OMPC_final:
@@ -13942,4 +13949,14 @@ OMPClause *Sema::ActOnOpenMPIsDevicePtrClause(ArrayRef<Expr *> VarList,
   return OMPIsDevicePtrClause::Create(
       Context, StartLoc, LParenLoc, EndLoc, MVLI.ProcessedVarList,
       MVLI.VarBaseDeclarations, MVLI.VarComponents);
+}
+
+OMPClause *Sema::ActOnOpenMPAllocateClause(ArrayRef<Expr *> VarList,
+                                           SourceLocation StartLoc,
+                                           SourceLocation LParenLoc,
+                                           SourceLocation EndLoc) {
+  if (VarList.empty())
+    return nullptr;
+
+  return OMPAllocateClause::Create(Context, StartLoc, LParenLoc, EndLoc, VarList);
 }
